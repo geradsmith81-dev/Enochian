@@ -1,0 +1,62 @@
+PUTTING THE SIDEREAL ENOCHIAN CHART ONLINE  (GitHub + Streamlit Community Cloud)
+================================================================================
+
+No programming and no command line are needed: everything happens in your web browser.
+You need two free accounts: GitHub (github.com) and Streamlit Community Cloud
+(share.streamlit.io; sign in there with your GitHub account).
+
+
+A. FIRST TIME ONLY: create the repository and upload the files
+--------------------------------------------------------------
+1. Unzip: right-click "SiderealEnochianApp_github.zip", choose "Extract All...",
+   then "Extract". A folder opens containing app.py and the other files.
+2. Go to github.com and sign in. Click the "+" at the top right, then "New repository".
+   - Repository name: sidereal-enochian-chart (any name will do)
+   - Choose "Private". This is recommended because the tables come from in-copyright books.
+   - Leave the other options unticked. Click "Create repository".
+3. On the new, empty repository page, click the link "uploading an existing file".
+4. In the extracted folder, press Ctrl+A to select EVERYTHING INSIDE it, then drag
+   the selection into the browser window.
+   - Drag the CONTENTS, not the folder itself, so that app.py sits at the top level.
+   - Dragging (rather than "choose your files") is what brings the ".streamlit" and
+     "assets" sub-folders along.
+   - Files whose names start with a dot (.gitignore, .streamlit) may be hidden in
+     Windows. To show them: in File Explorer choose View > Show > Hidden items.
+5. Wait until every file is listed, then click the green "Commit changes" button.
+
+B. FIRST TIME ONLY: start the app on Streamlit
+----------------------------------------------
+1. Go to share.streamlit.io and sign in with GitHub. If it asks for permission to
+   see your private repositories, allow it.
+2. Click "Create app", then "Yup, I have an app" (deploy from GitHub).
+3. Fill in:   Repository = your new repository
+              Branch     = main
+              Main file path = app.py
+   Optionally choose a web address under "App URL". Click "Deploy".
+4. The first start takes a few minutes, because Streamlit installs the components and
+   the app downloads the NASA planetary file (about 32 MB). After that it opens quickly.
+5. To let other people see it, open the app's "Settings" > "Sharing" and make it public.
+   The repository itself stays private.
+
+
+C. EVERY LATER UPDATE (each time you get a new SiderealEnochianApp_github.zip)
+------------------------------------------------------------------------------
+1. Unzip the new zip as in A1.
+2. On your GitHub repository page click "Add file" > "Upload files".
+3. Select everything inside the extracted folder (Ctrl+A) and drag it in. Files with
+   the same names are replaced.
+4. Click "Commit changes". Streamlit notices the change and restarts the app by
+   itself within a minute or two.
+   (If a file was renamed or removed in an update, you will be told; delete the old
+   one on GitHub by opening it, then the "..." menu, then "Delete file".)
+
+
+NOTES
+-----
+- On the website your profile (name, picture, birth details) is kept only while the
+  browser tab is open; it is not saved on the server. The desktop app on your own
+  computer keeps it in its private "profile" folder, which is never uploaded.
+- The NASA file "de440s.bsp" is deliberately not in the zip. It is larger than
+  GitHub's 25 MB upload limit, and the app downloads it by itself.
+- If the online app shows an error, click "Manage app" (bottom right) to see the log,
+  or use "Reboot app" from the menu on share.streamlit.io.
