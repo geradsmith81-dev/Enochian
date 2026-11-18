@@ -18,12 +18,33 @@ from skyfield.framelib import ecliptic_frame
 from skyfield.positionlib import position_of_radec
 from skyfield import nutationlib, earthlib
 from skyfield.api import load_constellation_map, load_constellation_names
+from skyfield.framelib import ICRS_to_J2000
+from skyfield.functions import load_bundled_npy, mxv, to_spherical
+from skyfield.precessionlib import compute_precession
+from skyfield.timelib import julian_date_of_besselian_epoch
+import numpy as _np
 
 _load = Loader('ephem')
 ts = _load.timescale()
 eph = _load('de440s.bsp')
-_const_at = load_constellation_map()
 _const_name = dict(load_constellation_names())
+
+# IAU constellation lookup in the MEAN equator and equinox of B1875.0, the frame in which Delporte (1930) drew the
+# boundaries. Skyfield's load_constellation_map() rotates to the TRUE equator of 1875 (its nutation included),
+# which shifts every boundary by a few arcseconds: the Sun's entry times then differ from JPL Horizons by 2-10
+# minutes. With the mean frame (checked against Horizons quantity 29, Nov 2026, 21 entries in 2026) the Sun's entries
+# agree to 22-26 s, Mercury/Venus/Mars to 14-32 s and Saturn to 294 s (about 0.4 arcsec of its slow motion).
+_C = load_bundled_npy('constellations.npz')
+_SRA, _SDEC, _R2I, _ABBR = _C['sorted_ra'], _C['sorted_dec'], _C['radec_to_index'], _C['indexed_abbreviations']
+_PB1875 = compute_precession(julian_date_of_besselian_epoch(1875)) @ ICRS_to_J2000
+
+
+def _const_at(position):
+    """IAU constellation abbreviation(s) of a Skyfield position (scalar or array)."""
+    _, dec, ra = to_spherical(mxv(_PB1875, position.position.au))
+    i = _np.searchsorted(_SRA, (_np.degrees(ra) / 15.0) % 24.0)
+    j = _np.searchsorted(_SDEC, _np.degrees(dec), side='right')
+    return _ABBR[_R2I[i, j]]
 
 BODIES = {
     'Sun': 'sun', 'Moon': 'moon', 'Mercury': 'mercury', 'Venus': 'venus',

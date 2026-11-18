@@ -1,4 +1,5 @@
-"""Sidereal chart with Enochian (Dee) interpretation - prototype interface.
+"""Sidereal chart with Enochian (Dee) interpretation, and a ritual calendar of the Heptarchic workings
+(pages Today, Month, Year, Watches, Workings, Occasions, How it works, About; modelled on Sky Gahshomar).
 
 Run:  streamlit run app.py      (conda env 'astro'; needs ephem/de440s.bsp and the CSV tables)
 """
@@ -20,11 +21,19 @@ import plain_forecast
 import os
 from zoneinfo import ZoneInfo
 from PIL import Image
+import enochian_script
+import ritual_calendar as rc
+import calendar_pages as cp
 
 _ICON = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'sidereal_enochian_icon.ico')
 st.set_page_config(page_title='Sidereal chart · Enochian reading', layout='wide',
                    page_icon=Image.open(_ICON) if os.path.exists(_ICON) else None)
 st.markdown(theme.css(), unsafe_allow_html=True)
+st.markdown(cp.css(), unsafe_allow_html=True)
+# 'Enochian script' (sidebar): the screen spelled in John Dee's Enochian letters; the switch itself stays in English
+enochian_script.install_pyplot()           # the chart wheel is re-lettered too
+if enochian_script.on():
+    st.markdown(enochian_script.css(), unsafe_allow_html=True)
 
 
 
@@ -45,6 +54,7 @@ def run(utc, lat, lon, elev, convention):
 
 
 # ---------------- inputs ----------------
+enochian_script.switch()       # first in the sidebar, always in English, so it is easy to find and switch back
 user_profile.sidebar_card()
 prof = user_profile.get()
 home, birth = prof.get('home'), prof.get('birth')
@@ -65,6 +75,7 @@ with st.sidebar:
         d, tm = local_naive.date(), local_naive.time()
         place, lat, lon, elev = f"{home['name']}, {home['country']}", home['lat'], home['lon'], float(home['elev'])
         tz = now.utcoffset().total_seconds() / 3600
+        tz_iana = tzname
         st.caption(f"{place} · {local_naive:%d %b %Y, %H:%M} local time (UTC{tz:+.2f}) · "
                    f"{'your device position' if home['src'] == 'gps' else 'from your profile'}")
         st.button('Update to this minute', icon=':material/refresh:', width='stretch')
@@ -74,6 +85,7 @@ with st.sidebar:
         place, lat, lon, tz = birth['place'], birth['lat'], birth['lon'], float(birth['utc_offset'])
         near_home = home and abs(home['lat'] - lat) < 0.02 and abs(home['lon'] - lon) < 0.02
         elev = float(home['elev']) if near_home else 0.0
+        tz_iana = birth.get('tz')
         st.caption(f"{user_profile.birth_text(birth)} · UTC{tz:+.2f}. Change it with Edit profile.")
     else:
         today = dt.date.today()
@@ -116,10 +128,12 @@ with st.sidebar:
             auto_off, tz_note = places.utc_offset_hours(tzname, local_naive)
             override = st.checkbox(f'Override UTC offset (automatic: {auto_off:+.2f} h)', value=False)
             tz = st.number_input('UTC offset (hours)', -12.0, 14.0, float(auto_off), 0.25) if override else auto_off
+            tz_iana = None if override else tzname
             if tz_note:
                 st.info(tz_note)
         else:
             tz = st.number_input('UTC offset of that clock (hours)', -12.0, 14.0, 0.0, 0.25)
+            tz_iana = None
     st.subheader('Options')
     convention = st.radio('Heptarchic day begins at', ['sunrise', 'midnight'], index=0,
                           help='Dee was never told (Peterson p160, p260). Sunrise is the project default.')
@@ -129,6 +143,26 @@ with st.sidebar:
 local = dt.datetime.combine(d, tm)
 utc_dt = local - dt.timedelta(hours=tz)
 utc = (utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour, utc_dt.minute, 0)
+
+# ---------------- pages (the ritual calendar is modelled on Sky Gahshomar) ----------------
+PAGES = {'Chart': 'Chart', 'Today': 'Today', 'Month': 'Month', 'Year': 'Year', 'Watches': 'Watches',
+         'Workings': 'Workings', 'Occasions': 'Occasions', 'How': 'How it works', 'About': 'About'}
+RENDER = {'Today': cp.render_today, 'Month': cp.render_month, 'Year': cp.render_year, 'Watches': cp.render_watches,
+          'Workings': cp.render_workings, 'Occasions': cp.render_occasions, 'How': cp.render_how,
+          'About': cp.render_about}
+page = st.radio('Page', list(PAGES), key='page', horizontal=True, format_func=PAGES.get,
+                label_visibility='collapsed')
+if page != 'Chart':
+    _tzi = rc.tzinfo(tz_iana, tz)
+    moment = local.replace(tzinfo=dt.timezone(dt.timedelta(hours=tz))).astimezone(_tzi)
+    st.title('Ritual calendar · ' + PAGES[page])
+    st.caption(f'{place} · the chosen moment {local:%d %b %Y %H:%M} local (UTC{tz:+.2f}) · '
+               'times from NASA JPL DE440s via Skyfield, IAU constellation boundaries · change the date, time and '
+               'place in the sidebar')
+    RENDER[page](dict(lat=float(lat), lon=float(lon), elev=float(elev), tzname=tz_iana, off=float(tz), tz=_tzi,
+                      place=place, conv=convention, moment=moment, mode=mode))
+    st.stop()
+
 summary, tab, rows, bands, asc, mc = run(utc, lat, lon, elev, convention)
 
 # ---------------- header ----------------
@@ -218,10 +252,10 @@ show = tab.rename(columns={'body': 'Body', 'ecl_lon': 'Ecl. long. (°)', 'iau_co
                            'zodiac_king': 'Zodiac King', 'tribe': 'Tribe', 'quarter': 'Face'})
 cols = [c for c in ['Body', 'Ecl. long. (°)', 'IAU constellation', 'Above horizon', 'Heptarchic King', 'Prince',
                     'Planet (Dee table)', 'Zodiac King', 'Tribe', 'Face'] if c in show]
-st.dataframe(show[cols], hide_index=True, width='stretch')
+enochian_script.table(show[cols])
 
 with st.expander('Sources and certainty'):
     st.markdown('Each statement is tagged **sourced**, **inferred**, or **app design rule**. '
                 'Sources: Peterson, *John Dee\'s Five Books of Mystery*; James, *The Enochian Evocation of Dr John Dee*; '
                 'Skinner, introduction to *Dr John Dee\'s Spiritual Diary*.')
-    st.dataframe(pd.read_csv('uncertainty_log.csv', encoding='utf-8'), hide_index=True, width='stretch')
+    enochian_script.table(pd.read_csv('uncertainty_log.csv', encoding='utf-8'))
