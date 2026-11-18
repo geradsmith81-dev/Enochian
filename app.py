@@ -228,13 +228,8 @@ def plain_dialog(sections, header):
 st.subheader('Forecast')
 with st.container(border=True):
     st.markdown(fc['summary'])
-    s_col, w_col = st.columns(2)
-    with s_col:
-        st.markdown('**Strengths**')
-        st.markdown('\n'.join(f'- {x}' for x in fc['strengths']) if fc['strengths'] else '_None under the current rules._')
-    with w_col:
-        st.markdown('**Weaknesses**')
-        st.markdown('\n'.join(f'- {x}' for x in fc['weaknesses']) if fc['weaknesses'] else '_None under the current rules._')
+    st.markdown('**Strengths**')
+    st.markdown('\n'.join(f'- {x}' for x in fc['strengths']) if fc['strengths'] else '_None under the current rules._')
     st.caption(fc['note'])
     b1, b2 = st.columns(2)
     if b1.button('What does this mean?', icon=':material/lightbulb:', type='primary', width='stretch',

@@ -1,7 +1,10 @@
-"""Forecast: a written summary of the chart's angelic influences, with strengths and weaknesses.
+"""Forecast: a written summary of the chart's angelic influences, with its strengths.
+
+Weaknesses were removed from the readings at the user's request (Nov 2026): no rule of kind 'weakness' is applied
+or shown, and those rules were taken out of forecast_rules.csv.
 
 Sources: the correspondence tables (Peterson; James). The summary only restates them.
-The strengths and weaknesses are APP INTERPRETIVE RULES: Dee gives no such judgements.
+The strengths are APP INTERPRETIVE RULES: Dee gives no such judgements.
 Each rule's wording is in forecast_rules.csv and can be edited or switched off there
 (enabled = False). The conditions that trigger each rule are defined in this file.
 """
@@ -30,12 +33,14 @@ def build(summary, tab, rules_csv='forecast_rules.csv', corr_csv='heptarchia_cor
     rules = rules[rules['enabled'].astype(str).str.lower().isin(['true', '1', 'yes'])].set_index('rule_id')
     corr = pd.read_csv(corr_csv, encoding='utf-8').set_index('weekday')
     T = tab.set_index('body')
-    out = {'strength': [], 'weakness': []}
+    out = {'strength': []}
     items = []                       # (kind, rule_id, values): lets the plain-English window re-tell each line
 
     def fire(rid, **kw):
         if rid in rules.index:
             kind = rules.loc[rid, 'kind']
+            if kind != 'strength':           # weaknesses are not part of the readings (user request)
+                return
             out[kind].append(rules.loc[rid, 'text'].format(**kw))
             items.append((kind, rid, kw))
 
@@ -100,14 +105,13 @@ def build(summary, tab, rules_csv='forecast_rules.csv', corr_csv='heptarchia_cor
     else:
         fire('place_none')
 
-    return dict(summary=' '.join(para), strengths=out['strength'], weaknesses=out['weakness'], items=items,
-                note='The summary restates the source tables. The strengths and weaknesses come from the app\'s '
+    return dict(summary=' '.join(para), strengths=out['strength'], items=items,
+                note='The summary restates the source tables. The strengths come from the app\'s '
                      'interpretive rules (forecast_rules.csv), not from Dee. For study and reflection, not prediction.')
 
 
 def as_text(fc, header=''):
     lines = [header, '', 'FORECAST', '', fc['summary'], '', 'Strengths:']
     lines += [f'  + {s}' for s in fc['strengths']] or ['  (none)']
-    lines += ['', 'Weaknesses:'] + ([f'  - {w}' for w in fc['weaknesses']] or ['  (none)'])
     lines += ['', fc['note']]
     return '\n'.join(lines).strip() + '\n'

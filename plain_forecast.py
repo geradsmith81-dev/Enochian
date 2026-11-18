@@ -2,11 +2,12 @@
 window of the Sidereal Oracle app).
 
 It restates the Forecast box without the technical terms, in five parts:
-  1. In short: the overall balance of good signs and cautions;
+  1. In short: how many good signs the rules pick out;
   2. who is in charge today (the day's King and Prince, with their realm in everyday words);
   3. right now: which of the day's six parts this is, its clock times, and the ministering angels on duty;
   4. where you are: the Part of the Earth for the location;
-  5. the good signs and the cautions, line by line, in plain words.
+  5. the good signs, line by line, in plain words.
+Cautions (weaknesses) were removed from the readings at the user's request (Nov 2026).
 The everyday wordings are app wording, kept in the 'plain' column of forecast_rules.csv and the 'realm_plain'
 column of heptarchia_correspondences.csv, so they can be edited in Excel like the Forecast's own wording.
 """
@@ -24,22 +25,11 @@ def _fmt(template, values):
     return str(template).format_map(defaultdict(lambda: '…', values))
 
 
-def _balance(n_s, n_w):
-    if n_s == 0 and n_w == 0:
-        return 'neutral', 'None of the rules picked out anything special about this moment.'
-    if n_s >= n_w + 2:
-        word = 'mostly favourable'
-    elif n_s > n_w:
-        word = 'leaning favourable'
-    elif n_s == n_w:
-        word = 'evenly balanced'
-    elif n_w >= n_s + 2:
-        word = 'mostly challenging'
-    else:
-        word = 'leaning challenging'
-    s = lambda n, a, b: f'{n} {a if n == 1 else b}'
-    return word, (f"Overall the picture is **{word}**: {s(n_s, 'good sign', 'good signs')} and "
-                  f"{s(n_w, 'caution', 'cautions')}.")
+def _in_short(n_s):
+    if n_s == 0:
+        return 'None of the rules picked out anything special about this moment.'
+    return (f"The rules pick out **{n_s} good {'sign' if n_s == 1 else 'signs'}** at this moment"
+            + (': a good moment to lean into the day\'s theme.' if n_s >= 2 else '.'))
 
 
 def part_window(summary, utc_dt, lon, tz_hours):
@@ -66,16 +56,8 @@ def build(summary, fc, utc_dt, lon, tz_hours, rules_csv='forecast_rules.csv',
     wd = summary['weekday']
     row = corr.loc[wd]
     goods = [_fmt(rules.loc[r, 'plain'], v) for k, r, v in fc.get('items', []) if k == 'strength' and r in rules.index]
-    cauts = [_fmt(rules.loc[r, 'plain'], v) for k, r, v in fc.get('items', []) if k == 'weakness' and r in rules.index]
-    word, in_short = _balance(len(goods), len(cauts))
     out = {}
-    lead = {'mostly favourable': 'A good moment to lean into the day\'s theme.',
-            'leaning favourable': 'More is working for you than against you.',
-            'evenly balanced': 'The good signs and the cautions cancel out; the day\'s theme is there to use, with care.',
-            'leaning challenging': 'Some things are pulling against the day\'s theme; go gently.',
-            'mostly challenging': 'Several cautions: a moment for patience rather than pushing.',
-            'neutral': ''}[word]
-    out['In short'] = in_short + (' ' + lead if lead else '')
+    out['In short'] = _in_short(len(goods))
 
     a, b, day0 = part_window(summary, utc_dt, lon, tz_hours)
     start_word = 'sunrise' if summary.get('day_start_utc') else 'midnight'
@@ -110,7 +92,6 @@ def build(summary, fc, utc_dt, lon, tz_hours, rules_csv='forecast_rules.csv',
         out['Where you are'] = ("Dee's 91 regions cover only the world known in his day; this place is outside "
                                 "them, so no regional guardian applies.")
     out['The good signs'] = '\n'.join(f'- {x}' for x in goods) or '_None at this moment._'
-    out['The cautions'] = '\n'.join(f'- {x}' for x in cauts) or '_None at this moment._'
     out['How to read this'] = DISCLAIMER
     return out
 
