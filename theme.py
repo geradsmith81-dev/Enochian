@@ -39,8 +39,12 @@ def css(bg_path='assets/background.jpg'):
     [data-testid="stHeader"] {{ background: transparent; }}
     [data-testid="stSidebar"] > div:first-child {{ background: rgba(28,27,33,0.80); backdrop-filter: blur(6px);
         border-right: 1px solid {p['aurora_muted']}55; }}
-    .block-container {{ background: rgba(28,27,33,0.50); border-radius: 16px; padding: 2rem 2.2rem 2.5rem;
+    .block-container {{ background: rgba(28,27,33,0.50); border-radius: 16px; padding: 2rem 2.2rem calc(7rem + env(safe-area-inset-bottom, 0px));
         margin-top: 1.2rem; backdrop-filter: blur(5px); border: 1px solid {p['aurora_muted']}40; }}
+    /* tablets and phones (user request, Nov 2026): more room at the bottom, so the last lines are not hidden behind
+       the browser toolbar, the iPad home bar or Streamlit's 'Manage app' badge */
+    @media (pointer: coarse), (max-width: 1100px) {{
+        .block-container {{ padding-bottom: calc(10rem + env(safe-area-inset-bottom, 0px)) !important; }} }}
     h1, h2, h3 {{ font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', serif !important;
         color: {p['glow']} !important; letter-spacing: 0.01em; }}
     h1 {{ text-shadow: 0 0 18px {p['aurora']}55; }}
