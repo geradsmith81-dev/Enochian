@@ -37,6 +37,13 @@ if enochian_script.on():
 
 
 
+def footer():
+    """Credit line at the bottom of every page (user request, Nov 2026)."""
+    st.divider()
+    st.markdown("<p style='text-align:center; opacity:0.85; font-size:0.9rem; margin:0.2rem 0 0;'>"
+                "Developed by Gerad Smith and Kenton Copper</p>", unsafe_allow_html=True)
+
+
 @st.cache_data(show_spinner=False)
 def find_places(q):
     return places.search(q, n=12)
@@ -161,6 +168,7 @@ if page != 'Chart':
                'place in the sidebar')
     RENDER[page](dict(lat=float(lat), lon=float(lon), elev=float(elev), tzname=tz_iana, off=float(tz), tz=_tzi,
                       place=place, conv=convention, moment=moment, mode=mode))
+    footer()
     st.stop()
 
 summary, tab, rows, bands, asc, mc = run(utc, lat, lon, elev, convention)
@@ -254,3 +262,5 @@ with st.expander('Sources and certainty'):
                 'Sources: Peterson, *John Dee\'s Five Books of Mystery*; James, *The Enochian Evocation of Dr John Dee*; '
                 'Skinner, introduction to *Dr John Dee\'s Spiritual Diary*.')
     enochian_script.table(pd.read_csv('uncertainty_log.csv', encoding='utf-8'))
+
+footer()
