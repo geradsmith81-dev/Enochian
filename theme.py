@@ -54,4 +54,88 @@ def css(bg_path='assets/background.jpg'):
         background: rgba(38,37,44,0.55); }}
     code {{ color: {p['glow']}; background: rgba(189,225,136,0.10); }}
     a {{ color: {p['aurora']}; }}
+    </style>""" + force_css()
+
+
+# Streamlit's own widgets, text and menus (user request, Nov 2026: Light mode must look the same as Dark mode).
+# These rules set the colours directly, so the app reads the same, light text on the dark aurora, whether the
+# browser, the tablet or Streamlit's menu is in light or dark mode, and even if .streamlit/config.toml is missing
+# (GitHub's web upload can drop the hidden .streamlit folder). Adapted from Sky Gahshomar's FORCE_CSS.
+# Contrast of every pair is at least 8:1 (text on panel 12.1:1, mist 9.1:1, aurora 10.3:1, night on aurora 11.6:1).
+def force_css():
+    p = PALETTE
+    T, M, G, A, N, C, H, B = (p['snow_text'], p['mist'], p['glow'], p['aurora'], p['night'], p['panel'], p['sky'],
+                              p['aurora_muted'])
+    return f"""<style>
+    :root {{ color-scheme: dark; }}
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], [data-testid="stBottom"] > div {{ color: {T}; }}
+    .stApp {{ background-color: {N}; }}
+    [data-testid="stHeader"] button, [data-testid="stHeader"] a, [data-testid="stToolbar"] *,
+    [data-testid="stSidebarCollapseButton"] *, [data-testid="stExpandSidebarButton"] *,
+    [data-testid="stSidebarCollapsedControl"] * {{ color: {T} !important; fill: currentColor; }}
+    [data-testid="stSidebar"] {{ background-color: {C} !important; color: {T}; }}
+    [data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li,
+    [data-testid="stMarkdownContainer"] strong, [data-testid="stText"], [data-testid="stWidgetLabel"],
+    [data-testid="stWidgetLabel"] p, label, legend, [data-testid="stRadio"] label, [data-testid="stRadio"] p,
+    [data-testid="stCheckbox"] p, [data-testid="stToggle"] p, [data-testid="stMetricLabel"] p {{ color: {T} !important; }}
+    [data-testid="stMetricValue"] {{ color: {A} !important; }}
+    [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p, .stCaption, small,
+    [data-testid="stWidgetLabel"] [data-testid="stTooltipIcon"] {{ color: {M} !important; }}
+    [data-testid="stMarkdownContainer"] a, [data-testid="stCaptionContainer"] a {{ color: {A} !important; }}
+    [data-testid="stMarkdownContainer"] code {{ background: rgba(189,225,136,0.10); color: {G}; }}
+    h1, h2, h3, h4, h5, h6, [data-testid="stHeading"] * {{ color: {G} !important; }}
+    /* text boxes, number boxes, select boxes and their menus */
+    [data-baseweb="input"], [data-baseweb="base-input"], [data-baseweb="textarea"], [data-baseweb="select"] > div,
+    [data-testid="stNumberInputContainer"], [data-testid="stDateInput"] [data-baseweb="input"],
+    [data-testid="stTimeInput"] [data-baseweb="select"] > div {{
+      background-color: {C} !important; border-color: {B} !important; color: {T} !important; }}
+    [data-baseweb="input"] input, [data-baseweb="base-input"] input, textarea, [data-baseweb="select"] input,
+    [data-baseweb="select"] div, [data-baseweb="select"] span {{ color: {T} !important; -webkit-text-fill-color: {T};
+      background-color: transparent; }}
+    input::placeholder, textarea::placeholder {{ color: {M} !important; -webkit-text-fill-color: {M}; opacity: 1; }}
+    [data-baseweb="select"] svg, [data-testid="stNumberInputContainer"] svg {{ color: {T} !important; fill: currentColor; }}
+    [data-testid="stNumberInputStepDown"], [data-testid="stNumberInputStepUp"] {{ background: {C} !important;
+      color: {T} !important; }}
+    [data-baseweb="popover"] > div, [data-baseweb="popover"] ul, [data-baseweb="menu"], [role="listbox"] {{
+      background-color: {C} !important; color: {T} !important; border-color: {B} !important; }}
+    [data-baseweb="popover"] li, [role="option"] {{ color: {T} !important; background-color: {C}; }}
+    [data-baseweb="popover"] li:hover, [role="option"]:hover, [role="option"][aria-selected="true"] {{
+      background-color: {H} !important; }}
+    [data-baseweb="tag"] {{ background-color: {H} !important; color: {T} !important; }}
+    [data-baseweb="tag"] * {{ color: {T} !important; }}
+    [data-baseweb="calendar"], [data-baseweb="calendar"] * {{ background-color: {C}; color: {T}; }}
+    [data-baseweb="tooltip"], [data-baseweb="tooltip"] * {{ background-color: {C} !important; color: {T} !important; }}
+    /* buttons */
+    [data-testid^="stBaseButton-secondary"], [data-testid="stDownloadButton"] button, .stButton > button {{
+      background-color: {C} !important; color: {T} !important; border: 1px solid {B} !important; }}
+    [data-testid^="stBaseButton-secondary"]:hover, [data-testid="stDownloadButton"] button:hover,
+    .stButton > button:hover {{ background-color: {H} !important; border-color: {A} !important; }}
+    [data-testid^="stBaseButton-primary"] {{ background-color: {A} !important; color: {N} !important;
+      border: 1px solid {G} !important; }}
+    [data-testid^="stBaseButton-primary"]:hover {{ background-color: {G} !important; }}
+    [data-testid^="stBaseButton"] p {{ color: inherit !important; }}
+    /* radio dots, check boxes and toggles stay visible on the dark ground */
+    [data-testid="stRadio"] [role="radio"] > div:first-child, [data-baseweb="radio"] > div:first-child {{
+      border-color: {A} !important; }}
+    [data-baseweb="checkbox"] [role="checkbox"], [data-baseweb="checkbox"] > div:first-child {{ border-color: {A} !important; }}
+    /* expanders, tabs, alerts, dialogs, tables */
+    [data-testid="stExpander"] details, [data-testid="stExpander"] > details {{ background-color: {C} !important;
+      border-color: {B} !important; color: {T} !important; }}
+    [data-testid="stExpander"] summary, [data-testid="stExpander"] summary * {{ color: {G} !important;
+      background-color: transparent; }}
+    [data-testid="stExpander"] summary:hover {{ background-color: {H} !important; }}
+    [data-baseweb="tab"], [data-baseweb="tab"] p {{ color: {T} !important; }}
+    [data-baseweb="tab"][aria-selected="true"], [data-baseweb="tab"][aria-selected="true"] p {{ color: {G} !important; }}
+    [data-testid="stAlertContainer"], [data-testid="stAlert"] > div {{ background-color: {C} !important;
+      color: {T} !important; border: 1px solid {B}; }}
+    [data-testid="stAlertContainer"] *, [data-testid="stAlert"] * {{ color: {T} !important; }}
+    div[role="dialog"], [data-testid="stDialog"] div[role="dialog"] {{ background-color: {N} !important;
+      color: {T} !important; border: 1px solid {B}; }}
+    div[role="dialog"] button[aria-label="Close"] {{ color: {T} !important; }}
+    [data-testid="stTable"] table, [data-testid="stTable"] th, [data-testid="stTable"] td {{ color: {T} !important;
+      background-color: {C} !important; border-color: {B} !important; }}
+    [data-testid="stTable"] th {{ color: {G} !important; }}
+    [data-testid="stSpinner"], [data-testid="stSpinner"] * {{ color: {T} !important; }}
+    [data-testid="stToast"] {{ background-color: {C} !important; color: {T} !important; }}
+    hr {{ border-color: {B} !important; }}
     </style>"""

@@ -54,7 +54,14 @@ C. EVERY LATER UPDATE (each time you get a new SiderealEnochianApp_github.zip)
    the same names are replaced.
 4. Click "Commit changes". Streamlit notices the change and restarts the app by
    itself within a minute or two (if not: share.streamlit.io > your app > "Reboot app").
-   This update adds new files (calendar_pages.py, ritual_calendar.py, workings.py,
+   LIGHT MODE: the file ".streamlit/config.toml" keeps the app dark even when a tablet,
+   phone or browser is in light mode. If your repository does not show a ".streamlit"
+   folder after uploading (GitHub's web upload sometimes drops it), make it by hand:
+   "Add file" > "Create new file", type the name  .streamlit/config.toml  (the slash
+   makes the folder), open "config.toml for GitHub (paste).txt" from the zip in Notepad,
+   copy everything into the big box, and click "Commit changes". (The app also forces
+   its dark colours by itself, so the text stays readable even without this file.)
+   An earlier update added new files (calendar_pages.py, ritual_calendar.py, workings.py,
    enochian_script.py, HOW_IT_WORKS.md, LICENSE, assets\fonts\...): dragging
    everything in, as above, uploads them too. Nothing needs deleting.
 
